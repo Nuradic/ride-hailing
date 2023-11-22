@@ -1,4 +1,5 @@
 const types=require("./types");
+const db=require("./..")
 class Model{
 
     updated_at= types.TimestampField({null:false,tz:true});
@@ -10,24 +11,54 @@ class Model{
 
 
     constructor(){
+        for(let property of Object.getOwnPropertyNames(this)){
+            Object.defineProperty(this,property,{
+                get(){
+
+                    return this[property].value;
+
+                },
+                set(value){
+
+                    this[property].value=value;
+
+                    return value;
+
+                }
+            })
+
+        }
+
 
 
     };
+
+    alter_table(){
+
+        let command="ALTER TABLE "
+
+    }
 
     create_table(){
         let command=`CREATE TABLE IF NOT EXISTS ${this.META.table_name}(id BIGSERIAL PRIMARY KEY,`
 
         let columns=[];
 
-        let prop=Object.keys(this);
+        let prop=Object.getOwnPropertyNames(this);
+
 
         for (let item of prop){
-            if("META"===item) continue;
+            if( !(this[item].is_models_type) ) continue;
             columns.push(this[item].init(item));
         }
 
 
-        let segment=columns.join(",")+ ")";
+        let segment=columns.join(",") + ")";
+
+        db.transaction(function (client){
+            client.query(command+segment);
+
+        },)
 
 
 
@@ -62,10 +93,14 @@ class Model{
     };
 }
 class BaseUser extends Model{
-    first_name=  types.Charfield({max_length:512})
-    last_name= types.Charfield({max_length:255,null:true})
-    email=types.Charfield({max_length:255,null:true})
-    car=types.ForeignKeyField("CAR")
+    phone=types.Charfield({max_length:255});
+    first_name=  types.Charfield({max_length:512});
+    last_name= types.Charfield({max_length:255,null:true});
+    email=types.Charfield({max_length:255,null:true});
+    verified=types.BoleanField({default:false})
+    phone_verified=types.BoleanField({default:false})
+    email_verified=types.BoleanField({default:false})
+
 
 }
 module.exports=BaseUser

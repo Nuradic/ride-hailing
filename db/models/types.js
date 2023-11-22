@@ -5,32 +5,47 @@ class Type {
   unique = false;
   index = false;
   blank;
+
+  is_models_type=true;
   required_parameters = [];
 
   updated = {};
 
   constructor(args) {
 
-    if (args){
 
-        
+    if (args){
         this.null = args.null;
         this.default = args.default;
         this.blank = args.blank;
+
 
     }
   }
 
   init(column) {
-    let make = [`${column} ${this.sql_eq}`];
+    let make = [`${column} ${this.db_type}`];
 
     if (!this.null) make.push("NOT NULL");
 
     if (this.unique) make.push("UNIQUE");
 
+    if((typeof this.default != 'undefined' && this.default != null)) make.push("DEFAULT "+ `'${this.default}'`);
+
     if (this.alter.index) this.index("INDEX");
 
     return make.join(" ");
+  }
+
+  field_detail(column){
+
+    return {
+        column:column,
+        null:this.null,
+        unique:this.unique,
+        type:this.db_type,
+        default:this.default
+    }
   }
 
   alter() {}
@@ -38,71 +53,71 @@ class Type {
 
 class Charfield extends Type {
   required_parameters = ["max_length"];
-  sql_eq = "VARCHAR(255)";
+  db_type = "VARCHAR(255)";
 
   constructor(args) {
     super(args)
-    if(args.max_length) this.sql_eq=this.sql_eq.replace("255",`${args.max_length}`);
+    if(args.max_length) this.db_type=this.db_type.replace("255",`${args.max_length}`);
   }
 }
 class BoleanField extends Type {
-    sql_eq = "BOOLEAN";
+    db_type = "BOOLEAN";
     constructor(args) {
       super(args);
     }
 }
 class BinaryField extends Charfield {
-  sql_eq = "TEXT";
+  db_type = "TEXT";
 }
 class TextField extends Charfield {
-  sql_eq = "TEXT";
+  db_type = "TEXT";
 }
 
 class SmallIntegerField extends Type {
-  sql_eq = "SMALLINTEGER";
+  db_type = "SMALLINTEGER";
 }
 class IntegerField extends Type {
-  sql_eq = "INTEGER";
+  db_type = "INTEGER";
 }
 class BigIntegerField extends Type {
-  sql_eq = "BIGINTEGER";
+  db_type = "BIGINTEGER";
 }
 class SmallSerial extends Type {
-  sql_eq = "SMALLSERIAL";
+  db_type = "SMALLSERIAL";
 }
 class Serial extends Type {
-  sql_eq = "SERIAL";
+  db_type = "SERIAL";
 }
 class BigSerial extends Type {
-  sql_eq = "BIGSERIAL";
+  db_type = "BIGSERIAL";
 }
 
 class DecimalField extends Type {
-  sql_eq = "REAL";
+  db_type = "REAL";
 }
 class DateField extends Type {
-    sql_eq="DATE"
+    db_type="DATE"
 }
 class TimeField extends Type {
-    sql_eq="TIME"
+    db_type="TIME"
 }
 
 class TimestampField extends Type {
-    sql_eq="TIMESTAMP"
+    db_type="TIMESTAMP"
     constructor(args) {
         super(args)
-        if(args.tz) this.sql_eq+="Z"; 
+        // if(args.tz) this.db_type+="Z"; 
       }
 }
 
 class JSONField extends Type {
-    sql_eq="JSON"
+    db_type="JSON"
 }
 
 class ForeignKeyField extends Type{
 
     model;
-    sql_eq="BIGINTERGER"
+    db_type="BIGINTERGER"
 
     constructor(model,args){
         super(args);
@@ -115,6 +130,13 @@ class ForeignKeyField extends Type{
         return `CONSTRAINT fk_${column}_${model.META.table_name}_id FOREIGN KEY(${column}) REFERENCES ${model.META.table_name}(id)`;
 
     }
+
+}
+
+class FileField extends Charfield{
+    
+}
+class ImageField extends FileField{
 
 }
 
@@ -135,5 +157,7 @@ module.exports={
     TimeField:(args)=>new TimeField(args),
     TimestampField:(args)=>new TimestampField(args),
     JSONField:(args)=>new JSONField(args),
-    ForeignKeyField:(model,args)=>new ForeignKeyField(model,args)
+    ForeignKeyField:(model,args)=>new ForeignKeyField(model,args),
+    FileField:(args)=>FileField(args),
+    ImageField:(args)=>ImageField(args)
 }

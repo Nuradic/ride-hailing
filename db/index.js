@@ -1,5 +1,4 @@
 const {Pool}=require("pg");
-const { param } = require("../routes");
 const pool = new Pool({
     user: 'nurad',
     host: 'localhost',

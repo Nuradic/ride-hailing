@@ -14,8 +14,8 @@ const  con=require("./db/models/index");
 let obj=new con({null:false,});
 // console.log(Object.keys(obj))
 // console.log(obj['updated_at'])
-console.log(obj.create_table())
-
+// console.log(obj.create_table())
+const mig=require("./db/migrations");
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

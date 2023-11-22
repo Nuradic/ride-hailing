@@ -1,0 +1,16 @@
+{
+    "model":"Model",
+    "columns":[
+        {
+            "fieldName":"Something",
+            "null":true,
+            "type":"Integer",
+            "unique":true,
+            "default":"Something",
+            "foreignkey":"model"
+            
+        }
+    
+    ]
+
+}
